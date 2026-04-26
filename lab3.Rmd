@@ -1,0 +1,232 @@
+---
+title: "SAD Lab3"
+author: "Izabela Siemieniuk"
+date: "2026-04-08"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Zadanie 1
+
+W urnie znajduje się 8 kul ponumerowanych od 1 do 8. Losujemy jednocześnie 5 kul.
+Niech X oznacza największy spośród numerów kul w wylosowanej próbce. Wyznacz rozkład
+x (w ramce ddanych) oraz stwórz wykres tego rozkładu oraz jego dystrybuante. Można wykorzystać funkcję ecdf(). Wskazówka - korzytając z ecdf należy odpowiedio przygotować dane (próbkę) bazując na prawdopodbieństwie. Funkcja ecdf() to funckja wyznaczająca dystrybuantę empiryczną czy taką, która bazuje na próbce jaką mamy. Jest ona przybliżeniem dystrybuanty teoretycznej. chunk like this:
+
+```{r}
+# combn(x, m, FUN = NULL, simplify = TRUE, …)
+komb <- combn(1:8, 5)
+
+X <- apply(komb, 2, max)
+
+tab <- table(X) #zlicza ile razy występuje każda wartość
+tab
+
+px <- tab / sum(tab) #częstość/wszystkie
+
+px
+
+barplot(px, main="Rozkład P(X=x)", xlab="x", ylab="P(X=x)", col=rgb(0.8,0.1,0.1,0.6))
+
+Fx_emp <- ecdf(X)
+plot(Fx_emp, main="Dystrybuanta empiryczna")
+
+```
+
+## Zadanie 2
+Wyznaczyć dla rozkładu normalnego o średniej 2 i odchyleniu standardowym 5 wartość
+funkcji gęstości w punkcie 3, wartość dystrybuanty w pukcie 7, podać kwantyl rzędu 4/5 i podać do powyższych przypadków interpretację. Powtórzyć to dla rozkładu t-studenta o 5 stopniach swobody
+
+Rozkład normalny N(2,5)
+```{r}
+# dnorm(x, mean = 0, sd = 1, log = FALSE)
+# pnorm(q, mean = 0, sd = 1, lower.tail = TRUE, log.p = FALSE)
+# qnorm(p, mean = 0, sd = 1, lower.tail = TRUE, log.p = FALSE)
+
+dnorm(3, mean=2, sd=5) #wartość funkcji gęstości prawdopodobieństwa
+pnorm(7, mean=2, sd=5) #dystrybuanta, P(X <= 7)
+qnorm(0.8, mean=2, sd=5) # kwantyl 4/5 = 80%, wartość x taka, że P(X <= x) = 0.8
+```
+
+Rozkład T-Studenta o 5 stopniach swobody
+```{r}
+# Taka sama konwencja - d dla gęstości, p dla dystrybuanty, i q dla kwantyli
+
+dt(3, df=5)
+pt(7, df=5)
+qt(0.8, df=5)
+```
+## Zadanie 3
+Obliczyć P(X <= 1,5) oraz P(|X| < 2,5) jeżeli zmienna losowa X ma rozkład N(0,1) i
+N(2,1)
+```{r}
+# Rozkład 0, 1 więc nie musimy podawać parametrów
+# 1. Dystrybuanta
+pnorm(1.5)
+
+# 2. Różnica dystrybuant
+pnorm(2.5) - pnorm(-2.5)
+
+# N(2,1) 
+pnorm(1.5, mean=2, sd=1)
+
+pnorm(2.5, 2, 1) - pnorm(-2.5, 2, 1)
+```
+## Zadanie 4
+Wyznaczyć następującę prawdopodbieństwa : P(x < 1), P(-1/2 <= x <= 1/2), P(x >= -1).
+Zakładamy, że X jest zmienną losową z rozkładu jednostajnego na przedziale [-3, 3], i druga opcja X jest z rozkładu wykładniczego z parametrem Lambda = 1.5, dla prawdopodobieńst: P(x < 1), P(12 <= x <= 32), P(x >= 4).
+
+```{r}
+# punif(0.5, min = 0, max = 1) rozkład jednostajny
+punif(1, -3, 3)
+punif(0.5, -3, 3) - punif(-0.5, -3, 3)
+1 - punif(-1, -3, 3)
+
+
+# pexp(x_dexp, rate = 5)   Rozkład wykładniczy
+pexp(1, 1.5)
+pexp(1.5, 1.5) - pexp(0.5, 1.5)
+1 - pexp(4, 1.5)
+```
+
+## Zadanie 5
+Reguła 3 sigma (68% wartośći z przedziału (-1,1) 95% z przedziału (-2,2), 99% z przedziału (-3,3)). Pokazać dla 1000 wartości (próbki) z rozkładu normalnego (oraz dla rozkładu ciągłego), że rzeczywiście tak jest. Pokazać to również dla rozkładu teoretycznego i porównać
+
+```{r}
+set.seed(42)
+x <- rnorm(1000) # losujemy 100 wartości w celu symulacji
+
+mean(abs(x) < 1) # mniej niż 68
+mean(abs(x) < 2) #
+mean(abs(x) < 3)
+
+hist(x, probability=TRUE,
+     main="Reguła 3 sigma",
+     xlab="x",
+     col=rgb(0.8,0.1,0.1,0.6))
+
+abline(v=c(-1,1))
+abline(v=c(-2,2))
+abline(v=c(-3,3))
+
+# Rozkład teoretyczny
+pnorm(1) - pnorm(-1)
+pnorm(2) - pnorm(-2)
+pnorm(3) - pnorm(-3)
+```
+Wyniki empiryczne są bardzo zbliżone do teoretycznych, potwierdzają regułę 3 sigm. Różnice wynikają z losowości próby.
+
+## Zadanie 6
+Narysować dystrybuanty oraz rozkłady teoretyczne i empiryczne dla rozkładów dyskretnych oraz dla rozkładów ciągłych. Następnie na podanej próbce oblicz średnią i wariancje dla każdego rozkładu i sprawdź czy zgadzają sie one z wartościami teoretycznymi. (link do rozkładów : https://stat.ethz.ch/R-manual/R-devel/library/stats/html/Distributions.html)
+
+```{r}
+set.seed(123)
+x_exp <- rexp(1000, rate=1.5) # Wybrano rozkłąd wykładniczy
+
+plot(ecdf(x_exp), main="Dystrybuanta wykładnicza (empiryczna)",
+     xlab="x", ylab="F(x)", col=rgb(0.8,0.1,0.1,0.6))
+
+curve(pexp(x, rate=1.5), add=TRUE, lty=2) # Teoretyczna
+
+mean(x_exp)
+mean(x_exp) - 1/1.5
+
+var(x_exp)
+var(x_exp) - 1/(1.5^2)
+```
+```{r}
+set.seed(123)
+x_exp <- rexp(100, rate=1.5) # Wybrano rozkłąd wykładniczy
+
+plot(ecdf(x_exp), main="Dystrybuanta wykładnicza (empiryczna)",
+     xlab="x", ylab="F(x)", col=rgb(0.8,0.1,0.1,0.6))
+
+curve(pexp(x, rate=1.5), add=TRUE, lty=2) # Teoretyczna
+
+mean(x_exp)
+mean(x_exp) - 1/1.5 #1/lambda
+
+var(x_exp)
+var(x_exp) - 1/(1.5^2) # 1/lambda^2
+```
+Wykonano podstawowe testy dla pojedynczego rozkładu wykładniczego. Sprawdzono dwie liczebności próby - 1000 i 100. Dla małych prób wyniki są bardziej podatne na losowe odchylenia, stąd wyższe błędy w porównaniu z wartościami teoretycznymi.
+
+``` {r}
+set.seed(42)
+n <- 1000
+
+
+# rozkłady ciągłe
+x_norm <- rnorm(n, mean = 0, sd = 1) # Normalny
+x_unif <- runif(n, min = -2, max = 3) # jednostajny
+x_exp  <- rexp(n, rate = 2) #wykładniczy
+
+# rozkłady dyskretne
+x_bern <- rbinom(n, size = 1, prob = 0.3) # Bernoulli
+x_bin  <- rbinom(n, size = 10, prob = 0.5) # Binomial
+x_poi  <- rpois(n, lambda = 4) # Poisson
+
+salmon_col <- "#FA8072"
+teal_col <- "#008080"
+
+
+plot_discrete <- function(x, title) {
+  probs <- prop.table(table(x))
+  barplot(probs, main = paste("Empiryczne P(Y=y) dla", title),
+          xlab = "Wartość y", ylab = "P(Y=y)", col = salmon_col)
+}
+
+plot_continuous <- function(x, title) {
+  hist(x, prob = TRUE, main = paste("Histogram i gęstość dla", title), col = salmon_col)
+  lines(density(x), col = teal_col, lwd=2)
+}
+
+# ciągłe
+plot_continuous(x_norm, "N(0,1)")
+curve(dnorm(x,0,1), add=TRUE, col=salmon_col, lwd=2)
+
+plot_continuous(x_unif, "U(-2,3)")
+curve(dunif(x,-2,3), add=TRUE, col=salmon_col, lwd=2)
+
+plot_continuous(x_exp, "Exp(lambda=2)")
+curve(dexp(x, rate = 2), add=TRUE, col=salmon_col, lwd=2)
+
+# dystrybuanta empiryczna vs teoretyczna
+plot(ecdf(x_norm), main="Dystrybuanta N(0,1)")
+curve(pnorm(x,0,1), add=TRUE, col=teal_col, lwd=2)
+
+plot(ecdf(x_unif), main="Dystrybuanta U(-2,3)")
+curve(punif(x,-2,3), add=TRUE, col=teal_col, lwd=2)
+
+plot(ecdf(x_exp), main="Dystrybuanta Exp(lambda=2)")
+curve(pexp(x, rate = 2), add=TRUE, col=teal_col, lwd=2)
+
+# dyskretne
+plot_discrete(x_bern, "Bernoulli(p=0.3)")
+plot_discrete(x_bin, "Binomial(n=10, p=0.5)")
+plot_discrete(x_poi, "Poisson(lambda=4)")
+
+df <- data.frame(
+  Rozklad = c("N(0,1)","U(-2,3)","Exp(2)","Bernoulli","Binomial","Poisson"),
+  Emp_Mean = c(mean(x_norm), mean(x_unif), mean(x_exp),
+               mean(x_bern), mean(x_bin), mean(x_poi)),
+  Emp_Var  = c(var(x_norm), var(x_unif), var(x_exp),
+               var(x_bern), var(x_bin), var(x_poi))
+)
+
+df$Theo_Mean <- c(0, (-2+3)/2, 1/2,
+                  0.3, 10*0.5, 4)
+
+df$Theo_Var <- c(1, (3+2)^2/12, 1/2^2,
+                 0.3*(1-0.3), 10*0.5*0.5, 4)
+
+df$Mean_Error <- df$Emp_Mean - df$Theo_Mean
+df$Var_Error  <- df$Emp_Var - df$Theo_Var
+
+print(df)
+```
+
+
+Dla wszystkich rozkładów różnice są bardzo małe a rozklady empiryczne zbliżone do tych teoretycznych, co również można było zobacyzć na wykresach
